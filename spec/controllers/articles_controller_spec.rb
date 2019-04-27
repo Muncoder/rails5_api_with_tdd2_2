@@ -8,6 +8,7 @@ describe ArticlesController do
     end
 
     it 'should return proper json' do
+      create_list :article, 2
       get :index
       json = JSON.parse(response.body)
       pp json
