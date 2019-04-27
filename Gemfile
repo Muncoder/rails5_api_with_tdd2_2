@@ -14,6 +14,7 @@ gem 'pg'
 gem 'puma', '~> 3.11'
 gem 'rspec-rails'
 gem 'factory_bot_rails'
+gem 'active_model_serializers'
 
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
