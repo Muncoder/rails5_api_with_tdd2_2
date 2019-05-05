@@ -18,7 +18,7 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    @current_user = @access_token&.user
+    @current_user = access_token&.user
   end
 
   def authentication_error
