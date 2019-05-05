@@ -12,18 +12,19 @@ class ArticlesController < ApplicationController
 
   def create
     article = Article.new(article_params)
-    if article.valid?
-      #we will figure out
-    else
+    article.save!
+    render json: article, status: :created
+    rescue
       render json: article, adapter: :json_api,
-        serializer: ActiveModel::Serializer::ErrorSerializer,
+        serializer: ErrorSerializer,
         status: :unprocessable_entity
-    end
   end
 
   private
 
   def article_params
-    ActionController::Parameters.new
+    params.require(:data).require(:attributes).
+      permit(:title, :content, :slug) ||
+        ActionController::Parameters.new
   end
 end
