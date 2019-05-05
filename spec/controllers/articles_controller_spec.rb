@@ -231,7 +231,7 @@ describe ArticlesController do
 
         it 'should update the article' do
           subject
-          expect{ article.reload.title }.to eq(
+          expect( article.reload.title ).to eq(
             valid_attributes['data']['attributes']['title']
           )
         end
