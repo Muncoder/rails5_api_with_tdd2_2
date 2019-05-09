@@ -46,9 +46,6 @@ RSpec.describe CommentsController, type: :controller do
   end
 
   describe "POST #create" do
-    let(:valid_attributes) { { content: 'My awesome content for article' } }
-    let(:invalid_attributes) {{ content: '' }}
-
     context "when not authorized" do
       subject { post :create, params: { article_id: article.id }}
 
@@ -56,22 +53,28 @@ RSpec.describe CommentsController, type: :controller do
     end
 
     context "when authorized" do
+      let(:valid_attributes) { { content: 'My awesome content for article' } }
+      let(:invalid_attributes) {{ content: '' }}
+
       let(:user) { create :user }
       let(:access_token) { user.create_access_token }
 
       before { request.headers['authorization'] = "Bearer #{access_token.token}"}
 
       context "with valid params" do
+        subject { post :create, params: {article_id: article.id, comment: valid_attributes} }
+
+        it 'returns 201 status code' do
+          subject
+          expect(response).to have_http_status(:created)
+        end
+
         it "creates a new Comment" do
-          expect {
-            post :create, params: {article_id: article.id, comment: valid_attributes}
-          }.to change(Comment, :count).by(1)
+          expect { subject }.to change(article.comments, :count).by(1)
         end
 
         it "renders a JSON response with the new comment" do
-
-          post :create, params: {article_id: article.id, comment: valid_attributes}
-          expect(response).to have_http_status(:created)
+          subject
           expect(response.content_type).to eq('application/json')
           expect(response.location).to eq(article_url(article))
         end
