@@ -53,8 +53,11 @@ RSpec.describe CommentsController, type: :controller do
     end
 
     context "when authorized" do
-      let(:valid_attributes) { { content: 'My awesome content for article' } }
-      let(:invalid_attributes) {{ content: '' }}
+      let(:valid_attributes) do
+        { data: { attributes: { content: 'My awesome content for article' } } }
+      end
+
+      let(:invalid_attributes) { { data: { attributes: { content: '' } } } }
 
       let(:user) { create :user }
       let(:access_token) { user.create_access_token }
@@ -62,7 +65,9 @@ RSpec.describe CommentsController, type: :controller do
       before { request.headers['authorization'] = "Bearer #{access_token.token}"}
 
       context "with valid params" do
-        subject { post :create, params: {article_id: article.id, comment: valid_attributes} }
+        subject do
+          post :create, params: valid_attributes.merge(article_id: article.id)
+        end
 
         it 'returns 201 status code' do
           subject
@@ -75,17 +80,30 @@ RSpec.describe CommentsController, type: :controller do
 
         it "renders a JSON response with the new comment" do
           subject
-          expect(response.content_type).to eq('application/json')
-          expect(response.location).to eq(article_url(article))
+          expect(json_data['attributes']).to eq({
+            'content' => 'My awesome content for article'
+          })
         end
       end
 
       context "with invalid params" do
-        it "renders a JSON response with errors for the new comment" do
+        subject do
+          post :create, params: invalid_attributes.merge(article_id: article.id)
+        end
 
-          post :create, params: {article_id: article.id, comment: invalid_attributes}
+        it 'should return 422 status code' do
+          subject
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.content_type).to eq('application/json')
+        end
+
+        it "renders a JSON response with errors for the new comment" do
+          subject
+          expect(json['errors']).to include(
+            {
+              "source" => { "pointer" => "/data/attributes/content" },
+              "detail" => "can't be blank"
+            }
+          )
         end
       end
     end
